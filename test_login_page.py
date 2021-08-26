@@ -19,7 +19,6 @@ class TestLoginPage(BaseTest):
     def logout(self, driver):
         yield
         driver.find_element_by_xpath(".//button[contains(text(), 'Sign Out')]").click()
-        sleep(1)
 
     @pytest.fixture(scope="function")
     def register(self, driver):
@@ -138,9 +137,11 @@ class TestLoginPage(BaseTest):
         assert error_message.text == 'Invalid username / password'
         self.log.info("Error message match to expected")
 
-    def test_login(self, register, driver, logout):
+    def test_login(self, driver, logout):
         """
         - Open start page
+        - Registration
+        - Log out
         - Fill login and password fields
         - Click on Sign in button
         - Verify result
@@ -149,15 +150,43 @@ class TestLoginPage(BaseTest):
         driver.get("https://qa-complex-app-for-testing.herokuapp.com")
         self.log.debug("Open page")
 
-        username_value, _, password_value = register
+        # Fill email, login and password fields
+        # Fill username
+        username_value_2 = f"Name{self.variety_2}"
+        username_2 = driver.find_element_by_xpath(".//input[@id='username-register']")
+        username_2.clear()
+        username_2.send_keys(username_value_2)
+
+        # Fill email
+        email_value_2 = f"user{self.variety_2}@mail.com"
+        email_2 = driver.find_element_by_xpath(".//input[@id='email-register']")
+        email_2.clear()
+        email_2.send_keys(email_value_2)
+
+        # Fill password
+        password_value_2 = f"Password{self.variety_2}"
+        password_2 = driver.find_element_by_xpath(".//input[@id='password-register']")
+        password_2.clear()
+        password_2.send_keys(password_value_2)
+        self.log.debug("Fields were filled")
+        sleep(1)
+
+        # Click on Sign Up button
+        button = driver.find_element_by_xpath(".//button[@type='submit']").click()
+
+        hello_message = driver.find_element_by_xpath(".//h2")
+        assert username_value_2.lower() in hello_message.text
+        assert hello_message.text == f"Hello {username_value_2.lower()}, your feed is empty."
+        assert driver.find_element_by_xpath(".//strong").text == username_value_2.lower()
+        self.log.info("Registration was success and verified")
 
         # Clear required fields
-        username = driver.find_element_by_xpath(".//input[@placeholder='Username']")
-        username.clear()
-        username.send_keys(username_value)
-        password = driver.find_element_by_xpath(".//input[@placeholder='Password']")
-        password.clear()
-        password.send_keys(password_value)
+        username_sign_in = driver.find_element_by_xpath(".//input[@placeholder='Username']")
+        username_sign_in.clear()
+        username_sign_in.send_keys(username_value_2)
+        password_sign_in = driver.find_element_by_xpath(".//input[@placeholder='Password']")
+        password_sign_in.clear()
+        password_sign_in.send_keys(password_value_2)
         self.log.info("Fields were cleared and filled")
 
         # Click on Sign In button
@@ -165,9 +194,9 @@ class TestLoginPage(BaseTest):
         sign_in_button.click()
         self.log.info("Clicked on 'Sign In'")
 
-        # Verify register success
+        # Verify login success
         hello_message = driver.find_element_by_xpath(".//h2")
-        assert username_value.lower() in hello_message.text
-        assert hello_message.text == f"Hello {username_value.lower()}, your feed is empty."
-        assert driver.find_element_by_xpath(".//strong").text == username_value.lower()
-        self.log.info("Registration was success and verified")
+        assert username_value_2.lower() in hello_message.text
+        assert hello_message.text == f"Hello {username_value_2.lower()}, your feed is empty."
+        assert driver.find_element_by_xpath(".//strong").text == username_value_2.lower()
+        self.log.info("Log in was success and verified")
